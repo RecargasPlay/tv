@@ -7,325 +7,126 @@
     <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --bg: #111;
-            --sidebar-bg: #151515;
-            --purple: #8a2be2;
-            --green: #00ff88;
-            --text: #ffffff;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- BARRA DE ROLAGEM ROXA E FINA --- */
+        :root { --bg: #111; --sidebar-bg: #151515; --purple: #8a2be2; --green: #00ff88; --text: #ffffff; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 10px; }
-
-        aside {
-            width: 320px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid rgba(138, 43, 226, 0.3);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-        }
-
-        main {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: radial-gradient(circle, #1a1a1a 0%, #111 100%);
-        }
-
-        #player-container {
-            width: 100%; height: 100%;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #222;
-            position: relative;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
-        }
-
-        #player, .player-wrapper, iframe {
-            width: 100% !important; height: 100% !important;
-            border: none; display: block;
-        }
-
-        .click-shield {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 999; cursor: pointer;
-            background: rgba(0,0,0,0.01);
-        }
-
-        /* NAVEGAÇÃO */
-        .brand-container {
-            border-bottom: 1px solid #222;
-            padding: 15px 10px;
-            text-align: center;
-        }
-
-        .nav-header {
-            display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(90deg, var(--green), var(--purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700; font-size: 18px; letter-spacing: 1px;
-        }
-
-        .nav-btn {
-            -webkit-text-fill-color: var(--green);
-            cursor: pointer; font-size: 24px; transition: 0.3s; padding: 0 10px;
-        }
-
-        .nav-btn:hover { color: var(--purple); transform: scale(1.2); }
-
+        aside { width: 320px; background: var(--sidebar-bg); border-right: 1px solid rgba(138,43,226,0.3); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        main { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(circle, #1a1a1a 0%, #111 100%); }
+        #player-container { width: 100%; height: 100%; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        #player, .player-wrapper, iframe { width: 100% !important; height: 100% !important; border: none; display: block; }
+        .click-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; cursor: pointer; background: rgba(0,0,0,0.01); }
+        .brand-container { border-bottom: 1px solid #222; padding: 15px 10px; text-align: center; }
+        .nav-header { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(90deg, var(--green), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-size: 18px; }
+        .nav-btn { -webkit-text-fill-color: var(--green); cursor: pointer; font-size: 24px; padding: 0 10px; }
         .search-box { padding: 15px; }
-        .search-box input {
-            width: 90%; background: #000; border: 1px solid #333; padding: 12px;
-            color: var(--green); border-radius: 8px; outline: none; font-family: 'Rajdhani';
-        }
-
+        .search-box input { width: 90%; background: #000; border: 1px solid #333; padding: 12px; color: var(--green); border-radius: 8px; outline: none; font-family: 'Rajdhani'; }
         .channel-list { overflow-y: auto; flex-grow: 1; }
-        .item {
-            padding: 12px 15px; margin: 5px 10px; background: #1a1a1a;
-            border-radius: 8px; display: flex; align-items: center;
-            font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s;
-            border-left: 4px solid transparent; user-select: none;
-        }
-        .item:hover { background: #222; color: var(--green); transform: translateX(5px); }
-        .item.active { border-left-color: var(--green); background: rgba(138, 43, 226, 0.15); color: var(--green); }
-        
-        .channel-number {
-            min-width: 25px; font-size: 10px; color: var(--purple); margin-right: 12px;
-            background: #000; padding: 2px 5px; border-radius: 4px; text-align: center;
-        }
-
-        .movie-thumb {
-            width: 40px; height: 55px; border-radius: 4px; 
-            margin-right: 12px; object-fit: cover; border: 1px solid #333;
-        }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            main { order: 1; height: 35vh; width: 100%; padding: 0; flex-grow: 0; }
-            aside { order: 2; width: 100%; height: 65vh; border-right: none; border-top: 2px solid var(--purple); }
-            #player-container { border-radius: 0; border: none; }
-        }
+        .item { padding: 12px 15px; margin: 5px 10px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; font-size: 16px; font-weight: 600; cursor: pointer; border-left: 4px solid transparent; user-select: none; transition: 0.2s; }
+        .item:hover { background: #222; transform: translateX(5px); }
+        .item.active { border-left-color: var(--green); background: rgba(138,43,226,0.15); color: var(--green); }
+        .channel-number { min-width: 30px; font-size: 11px; color: var(--purple); margin-right: 12px; background: #000; padding: 2px 6px; border-radius: 4px; text-align: center; }
+        .movie-thumb { width: 40px; height: 55px; border-radius: 4px; margin-right: 12px; object-fit: cover; border: 1px solid #333; }
+        @media (max-width: 768px) { body { flex-direction: column; } main { order: 1; height: 35vh; width: 100%; padding: 0; } aside { order: 2; width: 100%; height: 65vh; border-right: none; border-top: 2px solid var(--purple); } }
     </style>
 </head>
 <body>
-
     <aside>
-        <div class="brand-container">
-            <div class="nav-header">
-                <span class="nav-btn" onclick="toggleMode()">❮</span>
-                <span id="current-mode-title">LISTA DE CANAIS</span>
-                <span class="nav-btn" onclick="toggleMode()">❯</span>
-            </div>
-        </div>
-        <div class="search-box">
-            <input type="text" id="filter" placeholder="🔍 Buscar..." onkeyup="filterList()">
-        </div>
+        <div class="brand-container"><div class="nav-header"><span class="nav-btn" onclick="toggleMode()">❮</span><span id="current-mode-title">TODOS CANAIS</span><span class="nav-btn" onclick="toggleMode()">❯</span></div></div>
+        <div class="search-box"><input type="text" id="filter" placeholder="🔍 Buscar..." onkeyup="filterList()"></div>
         <div class="channel-list" id="contentList"></div>
     </aside>
-
-    <main>
-        <div id="player-container">
-            <div id="player"></div>
-        </div>
-    </main>
-
+    <main><div id="player-container" ondblclick="toggleFullScreen()"><div id="player"></div></div></main>
     <script>
         const embedBase = "https://www2.embedtv.best/";
         let currentMode = 'canais';
+        let currentClappr;
 
         const canaisRaw = [
-            { n: "TV Brasil", u: "https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8" },
-            { n: "Jovem Pan News", u: "https://d6yfbj4xxtrod.cloudfront.net/out/v1/7836eb391ec24452b149f3dc6df15bbd/index.m3u8" },
-            { n: "Canal Gov", u: "https://canalgov-stream.ebc.com.br/index.m3u8" },
-            { n: "Rede Brasil", u: "https://video09.logicahost.com.br/redebrasiloficial/redebrasiloficial/playlist.m3u8" },
-            { n: "SIC PT", u: "https://d1zx6l1dn8vaj5.cloudfront.net/out/v1/b89cc37caa6d418eb423cf092a2ef970/index.m3u8" },
-            { n: "Rede Minas", u: "https://8hzcavccys.zoeweb.tv/redeminas/ngrp:redeminas_all/playlist.m3u8" },
-            { n: "RedeTV!", d: "https://geo.dailymotion.com/player/xgrus.html?video=kYe5OYErhldJ75Azib2" },
-            { n: "Adult Swim", d: embedBase + "adultswim" }, { n: "AE", d: embedBase + "ae" }, { n: "Animal Planet", d: embedBase + "animalplanet" },
-            { n: "Aparecida", d: embedBase + "aparecida" }, { n: "AXN", d: embedBase + "axn" }, { n: "Band", d: embedBase + "band" },
-            { n: "Band News", d: embedBase + "bandnews" }, { n: "Band Sports", d: embedBase + "bandsports" }, { n: "BBB 1", d: embedBase + "bbb1" },
-            { n: "BBB 2", d: embedBase + "bbb2" }, { n: "BBB 3", d: embedBase + "bbb3" }, { n: "BBB 4", d: embedBase + "bbb4" },
-            { n: "BBB 5", d: embedBase + "bbb5" }, { n: "BBB 6", d: embedBase + "bbb6" }, { n: "BBB 7", d: embedBase + "bbb7" },
-            { n: "BBB 8", d: embedBase + "bbb8" }, { n: "BBB 9", d: embedBase + "bbb9" }, { n: "BBB 10", d: embedBase + "bbb10" },
-            { n: "BBB Mosaico", d: embedBase + "bbbmosaico" }, { n: "Cartoon Network", d: embedBase + "cartoonnetwork" }, { n: "Cartoonito", d: embedBase + "cartoonito" },
-            { n: "CazeTV 1", d: embedBase + "cazetv1" }, { n: "CazeTV 2", d: embedBase + "cazetv2" }, { n: "Cinemax", d: embedBase + "cinemax" },
-            { n: "CNN Brasil", d: embedBase + "cnnbrasil" }, { n: "Combate", d: embedBase + "combate" }, { n: "Comedy Central", d: embedBase + "comedycentral" },
-            { n: "Cultura", d: embedBase + "cultura" }, { n: "Discovery Channel", d: embedBase + "discoverychannel" }, { n: "Discovery H&H", d: embedBase + "discoveryhh" },
-            { n: "Discovery ID", d: embedBase + "discoveryid" }, { n: "Discovery Kids", d: embedBase + "discoverykids" }, { n: "Discovery Science", d: embedBase + "discoveryscience" },
-            { n: "Discovery Theater", d: embedBase + "discoverytheater" }, { n: "Discovery Turbo", d: embedBase + "discoveryturbo" }, { n: "Disney Plus 1", d: embedBase + "disneyplus1" },
-            { n: "Disney Plus 2", d: embedBase + "disneyplus2" }, { n: "Disney Plus 3", d: embedBase + "disneyplus3" }, { n: "Dragon Ball 24h", d: embedBase + "dragonball24h" },
-            { n: "ESPN", d: embedBase + "espn" }, { n: "ESPN 2", d: embedBase + "espn2" }, { n: "ESPN 3", d: embedBase + "espn3" },
-            { n: "ESPN 4", d: embedBase + "espn4" }, { n: "ESPN 5", d: embedBase + "espn5" }, { n: "Food Network", d: embedBase + "foodnetwork" },
-            { n: "GNT", d: embedBase + "gnt" }, { n: "Globo AM", d: embedBase + "globoam" }, { n: "Globo MG", d: embedBase + "globomg" },
-            { n: "Globo News", d: embedBase + "globonews" }, { n: "Globo RJ", d: embedBase + "globorj" }, { n: "Globo RS", d: embedBase + "globors" },
-            { n: "Globo SP", d: embedBase + "globosp" }, { n: "Gloob", d: embedBase + "gloob" }, { n: "HBO", d: embedBase + "hbo" },
-            { n: "HBO 2", d: embedBase + "hbo2" }, { n: "HBO Family", d: embedBase + "hbofamily" }, { n: "HBO Mundi", d: embedBase + "hbomundi" },
-            { n: "HBO Plus", d: embedBase + "hboplus" }, { n: "HBO Pop", d: embedBase + "hbopop" }, { n: "HBO Xtreme", d: embedBase + "hboxtreme" },
-            { n: "HGTV", d: embedBase + "hgtv" }, { n: "History", d: embedBase + "history" }, { n: "History 2", d: embedBase + "history2" },
-            { n: "Max 1", d: embedBase + "max1" }, { n: "Max 2", d: embedBase + "max2" }, { n: "Megapix", d: embedBase + "megapix" },
-            { n: "MTV", d: embedBase + "mtv" }, { n: "Multishow", d: embedBase + "multishow" }, { n: "Nickelodeon", d: embedBase + "nickelodeon" },
-            { n: "Odeia o Chris 24h", d: embedBase + "odeiaochris24h" }, { n: "Off", d: embedBase + "off" }, { n: "Paramount Plus 2", d: embedBase + "paramountplus2" },
-            { n: "Premiere", d: embedBase + "premiere" }, { n: "Premiere 2", d: embedBase + "premiere2" }, { n: "Premiere 3", d: embedBase + "premiere3" },
-            { n: "Premiere 4", d: embedBase + "premiere4" }, { n: "Premiere 5", d: embedBase + "premiere5" }, { n: "Premiere 6", d: embedBase + "premiere6" },
-            { n: "Premiere 7", d: embedBase + "premiere7" }, { n: "Premiere 8", d: embedBase + "premiere8" }, { n: "Prime Video 1", d: embedBase + "primevideo1" },
-            { n: "Prime Video 2", d: embedBase + "primevideo2" }, { n: "PT Eleven 1", d: embedBase + "pteleven1" }, { n: "PT Eleven 2", d: embedBase + "pteleven2" },
-            { n: "PT Eleven 3", d: embedBase + "pteleven3" }, { n: "PT Sportv 1", d: embedBase + "ptsportv1" }, { n: "PT Sportv 2", d: embedBase + "ptsportv2" },
-            { n: "PT Sportv 3", d: embedBase + "ptsportv3" }, { n: "PT Sportv 4", d: embedBase + "ptsportv4" }, { n: "PT Sportv 5", d: embedBase + "ptsportv5" },
-            { n: "Record", d: embedBase + "record" }, { n: "SBT", d: embedBase + "sbt" }, { n: "Simpsons 24h", d: embedBase + "simpsons24h" },
-            { n: "Sony Channel", d: embedBase + "sonychannel" }, { n: "Space", d: embedBase + "space" }, { n: "Sportv", d: embedBase + "sportv" },
-            { n: "Sportv 2", d: embedBase + "sportv2" }, { n: "Sportv 3", d: embedBase + "sportv3" }, { n: "Sportv 4", d: embedBase + "sportv4" },
-            { n: "Studio Universal", d: embedBase + "studiouniversal" }, { n: "TCM", d: embedBase + "tcm" }, { n: "Telecine Action", d: embedBase + "telecineaction" },
-            { n: "Telecine Cult", d: embedBase + "telecinecult" }, { n: "Telecine Fun", d: embedBase + "telecinefun" }, { n: "Telecine Pipoca", d: embedBase + "telecinepipoca" },
-            { n: "Telecine Premium", d: embedBase + "telecinepremium" }, { n: "Telecine Touch", d: embedBase + "telecinetouch" }, { n: "TLC", d: embedBase + "tlc" },
-            { n: "TNT", d: embedBase + "tnt" }, { n: "TNT Novelas", d: embedBase + "tntnovelas" }, { n: "TNT Series", d: embedBase + "tntseries" },
-            { n: "Universal TV", d: embedBase + "universaltv" }, { n: "Viva", d: embedBase + "viva" }, { n: "Warner Channel", d: embedBase + "warnerchannel" }
+            {n:"TV Brasil",u:"https://tvbrasil-stream.ebc.com.br/EBC_HD-avc1_3000000=10004.m3u8"}, {n:"Jovem Pan News",u:"https://d6yfbj4xxtrod.cloudfront.net/out/v1/7836eb391ec24452b149f3dc6df15bbd/index.m3u8"},
+            {n:"Canal Gov",u:"https://canalgov-stream.ebc.com.br/index.m3u8"}, {n:"Rede Brasil",u:"https://video09.logicahost.com.br/redebrasiloficial/redebrasiloficial/playlist.m3u8"},
+            {n:"SIC PT",u:"https://d1zx6l1dn8vaj5.cloudfront.net/out/v1/b89cc37caa6d418eb423cf092a2ef970/index.m3u8"}, {n:"Rede Minas",u:"https://8hzcavccys.zoeweb.tv/redeminas/ngrp:redeminas_all/playlist.m3u8"},
+            {n:"ISTV",u:"https://cdn-tiva-video10-logicahost-com-br.smartbit.co/redeistv/redeistv/playlist.m3u8"}, {n:"Kids Mais",u:"https://stmv1.transmissaodigital.com/tvkidmais/tvkidmais/playlist.m3u8"},
+            {n:"Cavaleiros do Zodíaco 24h",u:"https://stmv3.webtvninjas.com.br/acessobrasiltv/acessobrasiltv/playlist.m3u8"}, {n:"TV Evangelizar",u:"https://cdn-tiva-tvevangelizar-brasilstream-com-br.smartbit.co/hls/tvevangelizar/index.m3u8"},
+            {n:"Amazon Sat",u:"https://cdn-tiva-amazonsat-brasilstream-com-br.smartbit.co/hls/amazonsat/index.m3u8"}, {n:"RedeTV!",d:"https://geo.dailymotion.com/player/xgrus.html?video=kYe5OYErhldJ75Azib2"},
+            {n:"TV Senado",y:"1Mv8LTdNN1U"},{n:"Record News",y:"DZrIuXZhshs"},{n:"SBT News",y:"lKd2yzsDQ-4"},{n:"TV Brasil Int",y:"2gx4MvEYcFs"},
+            {n:"Adult Swim",d:embedBase+"adultswim"},{n:"AE",d:embedBase+"ae"},{n:"Animal Planet",d:embedBase+"animalplanet"},{n:"Aparecida",d:embedBase+"aparecida"},{n:"AXN",d:embedBase+"axn"},{n:"Band",d:embedBase+"band"},{n:"Band News",d:embedBase+"bandnews"},{n:"Band Sports",d:embedBase+"bandsports"},{n:"BBB 1",d:embedBase+"bbb1"},{n:"BBB 2",d:embedBase+"bbb2"},{n:"BBB 3",d:embedBase+"bbb3"},{n:"BBB 4",d:embedBase+"bbb4"},{n:"BBB 5",d:embedBase+"bbb5"},{n:"BBB 6",d:embedBase+"bbb6"},{n:"BBB 7",d:embedBase+"bbb7"},{n:"BBB 8",d:embedBase+"bbb8"},{n:"BBB 9",d:embedBase+"bbb9"},{n:"BBB 10",d:embedBase+"bbb10"},{n:"BBB Mosaico",d:embedBase+"bbbmosaico"},{n:"Cartoon Network",d:embedBase+"cartoonnetwork"},{n:"Cartoonito",d:embedBase+"cartoonito"},{n:"CazeTV 1",d:embedBase+"cazetv1"},{n:"CazeTV 2",d:embedBase+"cazetv2"},{n:"Cinemax",d:embedBase+"cinemax"},{n:"CNN Brasil",d:embedBase+"cnnbrasil"},{n:"Combate",d:embedBase+"combate"},{n:"Comedy Central",d:embedBase+"comedycentral"},{n:"Cultura",d:embedBase+"cultura"},{n:"Discovery Channel",d:embedBase+"discoverychannel"},{n:"Discovery H&H",d:embedBase+"discoveryhh"},{n:"Discovery ID",d:embedBase+"discoveryid"},{n:"Discovery Kids",d:embedBase+"discoverykids"},{n:"Discovery Science",d:embedBase+"discoveryscience"},{n:"Discovery Theater",d:embedBase+"discoverytheater"},{n:"Discovery Turbo",d:embedBase+"discoveryturbo"},{n:"Disney Plus 1",d:embedBase+"disneyplus1"},{n:"Disney Plus 2",d:embedBase+"disneyplus2"},{n:"Disney Plus 3",d:embedBase+"disneyplus3"},{n:"Dragon Ball 24h",d:embedBase+"dragonball24h"},{n:"ESPN",d:embedBase+"espn"},{n:"ESPN 2",d:embedBase+"espn2"},{n:"ESPN 3",d:embedBase+"espn3"},{n:"ESPN 4",d:embedBase+"espn4"},{n:"ESPN 5",d:embedBase+"espn5"},{n:"Food Network",d:embedBase+"foodnetwork"},{n:"GNT",d:embedBase+"gnt"},{n:"Globo AM",d:embedBase+"globoam"},{n:"Globo MG",d:embedBase+"globomg"},{n:"Globo News",d:embedBase+"globonews"},{n:"Globo RJ",d:embedBase+"globorj"},{n:"Globo RS",d:embedBase+"globors"},{n:"Globo SP",d:embedBase+"globosp"},{n:"Gloob",d:embedBase+"gloob"},{n:"HBO",d:embedBase+"hbo"},{n:"HBO 2",d:embedBase+"hbo2"},{n:"HBO Family",d:embedBase+"hbofamily"},{n:"HBO Mundi",d:embedBase+"hbomundi"},{n:"HBO Plus",d:embedBase+"hboplus"},{n:"HBO Pop",d:embedBase+"hbopop"},{n:"HBO Xtreme",d:embedBase+"hboxtreme"},{n:"HGTV",d:embedBase+"hgtv"},{n:"History",d:embedBase+"history"},{n:"History 2",d:embedBase+"history2"},{n:"Max 1",d:embedBase+"max1"},{n:"Max 2",d:embedBase+"max2"},{n:"Megapix",d:embedBase+"megapix"},{n:"MTV",d:embedBase+"mtv"},{n:"Multishow",d:embedBase+"multishow"},{n:"Nickelodeon",d:embedBase+"nickelodeon"},{n:"Odeia o Chris 24h",d:embedBase+"odeiaochris24h"},{n:"Off",d:embedBase+"off"},{n:"Paramount Plus 2",d:embedBase+"paramountplus2"},{n:"Premiere",d:embedBase+"premiere"},{n:"Premiere 2",d:embedBase+"premiere2"},{n:"Premiere 3",d:embedBase+"premiere3"},{n:"Premiere 4",d:embedBase+"premiere4"},{n:"Premiere 5",d:embedBase+"premiere5"},{n:"Premiere 6",d:embedBase+"premiere6"},{n:"Premiere 7",d:embedBase+"premiere7"},{n:"Premiere 8",d:embedBase+"premiere8"},{n:"Prime Video 1",d:embedBase+"primevideo1"},{n:"Prime Video 2",d:embedBase+"primevideo2"},{n:"PT Eleven 1",d:embedBase+"pteleven1"},{n:"PT Eleven 2",d:embedBase+"pteleven2"},{n:"PT Eleven 3",d:embedBase+"pteleven3"},{n:"PT Sportv 1",d:embedBase+"ptsportv1"},{n:"PT Sportv 2",d:embedBase+"ptsportv2"},{n:"PT Sportv 3",d:embedBase+"ptsportv3"},{n:"PT Sportv 4",d:embedBase+"ptsportv4"},{n:"PT Sportv 5",d:embedBase+"ptsportv5"},{n:"Record",d:embedBase+"record"},{n:"SBT",d:embedBase+"sbt"},{n:"Simpsons 24h",d:embedBase+"simpsons24h"},{n:"Sony Channel",d:embedBase+"sonychannel"},{n:"Space",d:embedBase+"space"},{n:"Sportv",d:embedBase+"sportv"},{n:"Sportv 2",d:embedBase+"sportv2"},{n:"Sportv 3",d:embedBase+"sportv3"},{n:"Sportv 4",d:embedBase+"sportv4"},{n:"Studio Universal",d:embedBase+"studiouniversal"},{n:"TCM",d:embedBase+"tcm"},{n:"Telecine Action",d:embedBase+"telecineaction"},{n:"Telecine Cult",d:embedBase+"telecinecult"},{n:"Telecine Fun",d:embedBase+"telecinefun"},{n:"Telecine Pipoca",d:embedBase+"telecinepipoca"},{n:"Telecine Premium",d:embedBase+"telecinepremium"},{n:"Telecine Touch",d:embedBase+"telecinetouch"},{n:"TLC",d:embedBase+"tlc"},{n:"TNT",d:embedBase+"tnt"},{n:"TNT Novelas",d:embedBase+"tntnovelas"},{n:"TNT Series",d:embedBase+"tntseries"},{n:"Universal TV",d:embedBase+"universaltv"},{n:"Viva",d:embedBase+"viva"},{n:"Warner Channel",d:embedBase+"warnerchannel"}
         ];
 
         const filmesRaw = [
-            { "titulo": "A Bruxa do Gelo", "capaUrl": "https://image.tmdb.org/t/p/w400/nE8kvNUcEQ1HhILzT5gDPM5Lj25.jpg", "videoUrl": "https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Dezembro/26-12/A.Bruxa.do.Gelo.2022.mp4" },
-            { "titulo": "A Festa de Casamento", "capaUrl": "https://image.tmdb.org/t/p/w400/20PDwJrPRSFczAzLyio8pHgAGKU.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Novembro/15-11/A.Festa.de.Casamento.mp4" },
-            { "titulo": "A Lenda do Lobo da Montanha", "capaUrl": "https://image.tmdb.org/t/p/w400/o0XZMcbtYsxOMuTFT8T9qOPKYhO.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Outubro/18-10/A.Lenda.do.Lobo.da.Montanha.2024.mp4" },
-            { "titulo": "A Maldicao de Savannah", "capaUrl": "https://image.tmdb.org/t/p/w400/dLoIGT1rCQ9IM1Oa38gwx1GFD00.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Novembro/13-11/A.Maldicao.de.Savannah.mp4" },
-            { "titulo": "Abigail", "capaUrl": "https://image.tmdb.org/t/p/w400/3rNWxdsUYDsDxHrEc3OmXZVdKwJ.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Maio/26-05/Abigail.2024.mp4" },
-            { "titulo": "As Cores do Mal Vermelho", "capaUrl": "https://image.tmdb.org/t/p/w400/s1h7CqxjZg3yreNVjXQaBdGMVaw.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Maio/29-05/As.Cores.do.Mal%3A.Vermelho.2024.mp4" },
-            { "titulo": "Baila Vini", "capaUrl": "https://image.tmdb.org/t/p/w400/s1zEsvB5XoS0Gqr7tmnNZExVdRI.jpg", "videoUrl": "https://fenix7.mazalemp.click/VOD/FILMES/MAIO/Baila.Vini.mp4" },
-            { "titulo": "Cacula", "capaUrl": "https://image.tmdb.org/t/p/w400/uc2txUknq7W3ZyZN0hiwgvpoOOj.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Outubro/11-10/Cacula.2024.mp4" },
-            { "titulo": "Cao e Gato", "capaUrl": "https://image.tmdb.org/t/p/w400/waz72aByMcu9cLJWzC7pTu4NjEY.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Marco/19-03/Cao.e.Gato.2024.mp4" },
-            { "titulo": "Cedo Demais", "capaUrl": "https://image.tmdb.org/t/p/w400/4u0WFuYUagULcnTp11JDlh9jjLa.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Abril/10-04/Cedo.Demais.(2024).mp4" },
-            { "titulo": "Cinzas", "capaUrl": "https://image.tmdb.org/t/p/w400/gpc0f8adtJ2IImB3xoUDZeMAade.jpg", "videoUrl": "https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Fevereiro/12-02/Cinzas.2024.mp4" },
-            { "titulo": "Codigo Alarum", "capaUrl": "https://image.tmdb.org/t/p/w400/3wguDZosR8jc4mDG1jXfQKIPMXz.jpg", "videoUrl": "https://fenix7.mazalemp.click/JUNHO/Codigo.Alarum.mp4" },
-            { "titulo": "Felicidade e", "capaUrl": "https://image.tmdb.org/t/p/w400/aQxf2xZjMoerIAqR8grFzPFNDaO.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Novembro/15-11/Felicidade.e.mp4" },
-            { "titulo": "Flutuar", "capaUrl": "https://image.tmdb.org/t/p/w400/cweYrK30AExirAMewzTcZnV51D1.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Maio/18-05/Float.2024.mp4" },
-            { "titulo": "Furia Assassina", "capaUrl": "https://image.tmdb.org/t/p/w400/xy7l2WWzy5Q6C1e0EUhfLFHWnpJ.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Julho/18-07/Furia.Assassina.2024.mp4" },
-            { "titulo": "Furiosa Mad Max", "capaUrl": "https://image.tmdb.org/t/p/w400/7qOSKoOAPgemYhBwbJgBWcCxPWZ.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Junho/05-06/Furiosa%3A.Uma.Saga.Mad.Max.2024.mp4" },
-            { "titulo": "Johnny e Clyde", "capaUrl": "https://image.tmdb.org/t/p/w400/h3luJ9fz6IuqBSMuafRgkGf2nvW.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Novembro/15-11/Johnny.&.Clyde.Parceiros.no.Crime.mp4" },
-            { "titulo": "LaRoy Texas", "capaUrl": "https://image.tmdb.org/t/p/w400/ySlZE3n43iXDBtGBWdc6dTBRiiM.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Maio/27-05/LaRoy.Texas.2024.mp4" },
-            { "titulo": "Lights Out", "capaUrl": "https://image.tmdb.org/t/p/w400/dwcXOX4p0Wecvw3jzEe9GjlRI5Y.jpg", "videoUrl": "https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Fevereiro/22-02/Lights.Out.2024.mp4" },
-            { "titulo": "Lobisomens", "capaUrl": "https://image.tmdb.org/t/p/w400/ldCKvSF1iNmNPRC7PurYwcX7CuG.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Outubro/24-10/Lobisomens.2024.mp4" },
-            { "titulo": "Mais Uma Vida", "capaUrl": "https://image.tmdb.org/t/p/w400/byMdaD2oQNmgcI9Ohak9m1T0wE0.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Maio/01-05/Mais.Uma.Vida.2022.mp4" },
-            { "titulo": "Mea Culpa", "capaUrl": "https://image.tmdb.org/t/p/w400/roxD9VCTTXYfPjVj9HiSC5IMtc7.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Fevereiro/26-02/Mea.Culpa.%282024%29.mp4" },
-            { "titulo": "Natal Sangrento", "capaUrl": "https://image.tmdb.org/t/p/w400/veVP190MsLCig2sYpKBuVvp2vCg.jpg", "videoUrl": "https://fenix7.mazalemp.click/VOD/FILMES/AGOSTO/Natal.Sangrento.CINEMA.mp4" },
-            { "titulo": "Noite de Paris", "capaUrl": "https://image.tmdb.org/t/p/w400/8svyTfpaaHfzOufcvus02Nn2etS.jpg", "videoUrl": "https://fenix7.mazalemp.click/Vod/Filmes11/214968.mp4" },
-            { "titulo": "O Exorcismo", "capaUrl": "https://image.tmdb.org/t/p/w400/3tE6r2IaABY08EcIKF51qACri8H.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Outubro/18-10/O.Exorcismo.2024.mp4" },
-            { "titulo": "O Mal que Nos Habita", "capaUrl": "https://image.tmdb.org/t/p/w400/t6cWfm0o5TzCa3nHtHhXpzjBc8V.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Abril/10-04/O.Mal.que.Nos.Habita.2023.mp4" },
-            { "titulo": "O Rei dos Reis", "capaUrl": "https://image.tmdb.org/t/p/w400/as6hYQcPyv4f3Lrb4svPWV0nVaz.jpg", "videoUrl": "https://fenix7.mazalemp.click/Vod/Filmes04/42929.mp4" },
-            { "titulo": "O Ritual do Livro Vermelho", "capaUrl": "https://image.tmdb.org/t/p/w400/hrelSJo0YlMYyRiJuvkdVvgooxb.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Junho/04-06/O.Ritual.do.Livro.Vermelho.2022.mp4" },
-            { "titulo": "Operacao Resgate", "capaUrl": "https://image.tmdb.org/t/p/w400/vA90gPM2rueydorwv6jrZg150kr.jpg", "videoUrl": "https://fenix7.mazalemp.click/VOD/FILMES/JUNHO/Operacao.Resgate.mp4" },
-            { "titulo": "Oscar", "capaUrl": "https://image.tmdb.org/t/p/w400/bX4CMpqyCCRjpXW6OOaqcXsaiRU.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Marco/12-03/Oscar2024.mp4" },
-            { "titulo": "Sangue Frio", "capaUrl": "https://image.tmdb.org/t/p/w400/52IPpDucAJh1IxrvWJ4x1hBHum4.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Abril/07-04/Sangue.Frio.2024.mp4" },
-            { "titulo": "Sem Coracao", "capaUrl": "https://image.tmdb.org/t/p/w400/9TuKi2XgWvAuVbsp5jKLOzxgdXA.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Junho/Sem.Coracao.2024.mp4" },
-            { "titulo": "Sob Custodia", "capaUrl": "https://image.tmdb.org/t/p/w400/eqM5cBvLKSrcvGAyWf92tSVSQuT.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Novembro/19-11/Sob.Custodia.2024..mp4" },
-            { "titulo": "Terras Selvagens", "capaUrl": "https://image.tmdb.org/t/p/w400/r3eg88OcnLcCihQdaW3IAOlui4F.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Abril/07-04/Savage.Lands.2024..mp4" },
-            { "titulo": "Xeque Mate", "capaUrl": "https://image.tmdb.org/t/p/w400/h0cp9DMcP9MFvt3FQlrr4RAwzIX.jpg", "videoUrl": "https://fenix7.mazalemp.click/Filmes2024/Marco/02-03/Xeque.Mate.%282024%29.mp4" },
-            { "titulo": "60 Minutos", "capaUrl": "https://image.tmdb.org/t/p/w400/i5pJ8IoOanVAPBzKi3GiVnGlOld.jpg", "videoUrl": "https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Janeiro/22-01/60.Minutos.(2024).mp4" }
+            {titulo:"A Bruxa do Gelo",capaUrl:"https://image.tmdb.org/t/p/w400/nE8kvNUcEQ1HhILzT5gDPM5Lj25.jpg",videoUrl:"https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Dezembro/26-12/A.Bruxa.do.Gelo.2022.mp4"},
+            {titulo:"A Festa de Casamento",capaUrl:"https://image.tmdb.org/t/p/w400/20PDwJrPRSFczAzLyio8pHgAGKU.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Novembro/15-11/A.Festa.de.Casamento.mp4"},
+            {titulo:"A Lenda do Lobo da Montanha",capaUrl:"https://image.tmdb.org/t/p/w400/o0XZMcbtYsxOMuTFT8T9qOPKYhO.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Outubro/18-10/A.Lenda.do.Lobo.da.Montanha.2024.mp4"},
+            {titulo:"A Maldicao de Savannah",capaUrl:"https://image.tmdb.org/t/p/w400/dLoIGT1rCQ9IM1Oa38gwx1GFD00.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Novembro/13-11/A.Maldicao.de.Savannah.mp4"},
+            {titulo:"Abigail",capaUrl:"https://image.tmdb.org/t/p/w400/3rNWxdsUYDsDxHrEc3OmXZVdKwJ.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Maio/26-05/Abigail.2024.mp4"},
+            {titulo:"As Cores do Mal Vermelho",capaUrl:"https://image.tmdb.org/t/p/w400/s1h7CqxjZg3yreNVjXQaBdGMVaw.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Maio/29-05/As.Cores.do.Mal%3A.Vermelho.2024.mp4"},
+            {titulo:"Baila Vini",capaUrl:"https://image.tmdb.org/t/p/w400/s1zEsvB5XoS0Gqr7tmnNZExVdRI.jpg",videoUrl:"https://fenix7.mazalemp.click/VOD/FILMES/MAIO/Baila.Vini.mp4"},
+            {titulo:"Cacula",capaUrl:"https://image.tmdb.org/t/p/w400/uc2txUknq7W3ZyZN0hiwgvpoOOj.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Outubro/11-10/Cacula.2024.mp4"},
+            {titulo:"Cao e Gato",capaUrl:"https://image.tmdb.org/t/p/w400/waz72aByMcu9cLJWzC7pTu4NjEY.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Marco/19-03/Cao.e.Gato.2024.mp4"},
+            {titulo:"Cedo Demais",capaUrl:"https://image.tmdb.org/t/p/w400/4u0WFuYUagULcnTp11JDlh9jjLa.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Abril/10-04/Cedo.Demais.(2024).mp4"},
+            {titulo:"Cinzas",capaUrl:"https://image.tmdb.org/t/p/w400/gpc0f8adtJ2IImB3xoUDZeMAade.jpg",videoUrl:"https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Fevereiro/12-02/Cinzas.2024.mp4"},
+            {titulo:"Codigo Alarum",capaUrl:"https://image.tmdb.org/t/p/w400/3wguDZosR8jc4mDG1jXfQKIPMXz.jpg",videoUrl:"https://fenix7.mazalemp.click/JUNHO/Codigo.Alarum.mp4"},
+            {titulo:"Felicidade e",capaUrl:"https://image.tmdb.org/t/p/w400/aQxf2xZjMoerIAqR8grFzPFNDaO.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Novembro/15-11/Felicidade.e.mp4"},
+            {titulo:"Flutuar",capaUrl:"https://image.tmdb.org/t/p/w400/cweYrK30AExirAMewzTcZnV51D1.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Maio/18-05/Float.2024.mp4"},
+            {titulo:"Furia Assassina",capaUrl:"https://image.tmdb.org/t/p/w400/xy7l2WWzy5Q6C1e0EUhfLFHWnpJ.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Julho/18-07/Furia.Assassina.2024.mp4"},
+            {titulo:"Furiosa Uma Saga Mad Max",capaUrl:"https://image.tmdb.org/t/p/w400/7qOSKoOAPgemYhBwbJgBWcCxPWZ.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Junho/05-06/Furiosa%3A.Uma.Saga.Mad.Max.2024.mp4"},
+            {titulo:"Johnny e Clyde",capaUrl:"https://image.tmdb.org/t/p/w400/h3luJ9fz6IuqBSMuafRgkGf2nvW.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Novembro/15-11/Johnny.&.Clyde.Parceiros.no.Crime.mp4"},
+            {titulo:"LaRoy Texas",capaUrl:"https://image.tmdb.org/t/p/w400/ySlZE3n43iXDBtGBWdc6dTBRiiM.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Maio/27-05/LaRoy.Texas.2024.mp4"},
+            {titulo:"Lights Out",capaUrl:"https://image.tmdb.org/t/p/w400/dwcXOX4p0Wecvw3jzEe9GjlRI5Y.jpg",videoUrl:"https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Fevereiro/22-02/Lights.Out.2024.mp4"},
+            {titulo:"Lobisomens",capaUrl:"https://image.tmdb.org/t/p/w400/ldCKvSF1iNmNPRC7PurYwcX7CuG.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Outubro/24-10/Lobisomens.2024.mp4"},
+            {titulo:"Mais Uma Vida",capaUrl:"https://image.tmdb.org/t/p/w400/byMdaD2oQNmgcI9Ohak9m1T0wE0.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Maio/01-05/Mais.Uma.Vida.2022.mp4"},
+            {titulo:"Mea Culpa",capaUrl:"https://image.tmdb.org/t/p/w400/roxD9VCTTXYfPjVj9HiSC5IMtc7.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Fevereiro/26-02/Mea.Culpa.%282024%29.mp4"},
+            {titulo:"Natal Sangrento",capaUrl:"https://image.tmdb.org/t/p/w400/veVP190MsLCig2sYpKBuVvp2vCg.jpg",videoUrl:"https://fenix7.mazalemp.click/VOD/FILMES/AGOSTO/Natal.Sangrento.CINEMA.mp4"},
+            {titulo:"Noite de Paris",capaUrl:"https://image.tmdb.org/t/p/w400/8svyTfpaaHfzOufcvus02Nn2etS.jpg",videoUrl:"https://fenix7.mazalemp.click/Vod/Filmes11/214968.mp4"},
+            {titulo:"O Exorcismo",capaUrl:"https://image.tmdb.org/t/p/w400/3tE6r2IaABY08EcIKF51qACri8H.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Outubro/18-10/O.Exorcismo.2024.mp4"},
+            {titulo:"O Mal que Nos Habita",capaUrl:"https://image.tmdb.org/t/p/w400/t6cWfm0o5TzCa3nHtHhXpzjBc8V.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Abril/10-04/O.Mal.que.Nos.Habita.2023.mp4"},
+            {titulo:"O Rei dos Reis",capaUrl:"https://image.tmdb.org/t/p/w400/as6hYQcPyv4f3Lrb4svPWV0nVaz.jpg",videoUrl:"https://fenix7.mazalemp.click/Vod/Filmes04/42929.mp4"},
+            {titulo:"O Ritual do Livro Vermelho",capaUrl:"https://image.tmdb.org/t/p/w400/hrelSJo0YlMYyRiJuvkdVvgooxb.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Junho/04-06/O.Ritual.do.Livro.Vermelho.2022.mp4"},
+            {titulo:"Operacao Resgate",capaUrl:"https://image.tmdb.org/t/p/w400/vA90gPM2rueydorwv6jrZg150kr.jpg",videoUrl:"https://fenix7.mazalemp.click/VOD/FILMES/JUNHO/Operacao.Resgate.mp4"},
+            {titulo:"Oscar",capaUrl:"https://image.tmdb.org/t/p/w400/bX4CMpqyCCRjpXW6OOaqcXsaiRU.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Marco/12-03/Oscar2024.mp4"},
+            {titulo:"Sangue Frio",capaUrl:"https://image.tmdb.org/t/p/w400/52IPpDucAJh1IxrvWJ4x1hBHum4.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Abril/07-04/Sangue.Frio.2024.mp4"},
+            {titulo:"Sem Coracao",capaUrl:"https://image.tmdb.org/t/p/w400/9TuKi2XgWvAuVbsp5jKLOzxgdXA.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Junho/Sem.Coracao.2024.mp4"},
+            {titulo:"Sob Custodia",capaUrl:"https://image.tmdb.org/t/p/w400/eqM5cBvLKSrcvGAyWf92tSVSQuT.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Novembro/19-11/Sob.Custodia.2024..mp4"},
+            {titulo:"Terras Selvagens",capaUrl:"https://image.tmdb.org/t/p/w400/r3eg88OcnLcCihQdaW3IAOlui4F.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Abril/07-04/Savage.Lands.2024..mp4"},
+            {titulo:"Xeque Mate",capaUrl:"https://image.tmdb.org/t/p/w400/h0cp9DMcP9MFvt3FQlrr4RAwzIX.jpg",videoUrl:"https://fenix7.mazalemp.click/Filmes2024/Marco/02-03/Xeque.Mate.%282024%29.mp4"},
+            {titulo:"60 Minutos",capaUrl:"https://image.tmdb.org/t/p/w400/i5pJ8IoOanVAPBzKi3GiVnGlOld.jpg",videoUrl:"https://fenix7.mazalemp.click/Vod/Filmes2023/Filmes_Novembro/Janeiro/22-01/60.Minutos.(2024).mp4"}
         ];
 
-        // --- FUNÇÃO DE ORDENAR ALFABETICAMENTE ---
-        canaisRaw.sort((a, b) => a.n.localeCompare(b.n));
-        filmesRaw.sort((a, b) => a.titulo.localeCompare(b.titulo));
+        canaisRaw.sort((a,b)=>a.n.localeCompare(b.n));
+        filmesRaw.sort((a,b)=>a.titulo.localeCompare(b.titulo));
 
-        let currentClappr;
-
-        function toggleMode() {
-            currentMode = (currentMode === 'canais') ? 'filmes' : 'canais';
-            document.getElementById('current-mode-title').innerText = currentMode === 'canais' ? 'LISTA DE CANAIS' : 'LISTA DE FILMES';
-            renderList();
-        }
-
-        function renderList() {
-            const listContainer = document.getElementById('contentList');
-            listContainer.innerHTML = "";
-            const data = (currentMode === 'canais') ? canaisRaw : filmesRaw;
-
-            data.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'item';
-                if (currentMode === 'canais') {
-                    div.innerHTML = `<span class="channel-number">${(index + 1).toString().padStart(2, '0')}</span> <span>${item.n}</span>`;
-                    div.onclick = () => playCanal(item, div);
-                    div.ondblclick = () => { playCanal(item, div); toggleFullScreen(); };
-                } else {
-                    div.innerHTML = `<img src="${item.capaUrl}" class="movie-thumb"> <span>${item.titulo}</span>`;
-                    div.onclick = () => playMovie(item, div);
-                    div.ondblclick = () => { playMovie(item, div); toggleFullScreen(); };
+        function toggleMode(){currentMode=(currentMode==='canais')?'filmes':'canais';document.getElementById('current-mode-title').innerText=currentMode.toUpperCase();renderList();}
+        function toggleFullScreen(){const c=document.getElementById('player-container');if(!document.fullscreenElement)c.requestFullscreen();else document.exitFullscreen();}
+        function renderList(){
+            const l=document.getElementById('contentList');l.innerHTML="";
+            const d=(currentMode==='canais')?canaisRaw:filmesRaw;
+            d.forEach((item,idx)=>{
+                const div=document.createElement('div');div.className='item';
+                const num=(idx+1).toString().padStart(2,'0');
+                if(currentMode==='canais'){
+                    div.innerHTML=`<span class="channel-number">${num}</span><span>${item.n}</span>`;
+                    div.onclick=()=>playCanal(item,div);
+                }else{
+                    div.innerHTML=`<span class="channel-number">${num}</span><img src="${item.capaUrl}" class="movie-thumb"><span>${item.titulo}</span>`;
+                    div.onclick=()=>playMovie(item,div);
                 }
-                listContainer.appendChild(div);
-            });
-            document.getElementById('count-header').innerText = `${currentMode === 'canais' ? 'LISTA DE CANAIS' : 'LISTA DE FILMES'} (${data.length})`;
-        }
-
-        function playCanal(canal, el) {
-            updateActive(el); clearPlayer();
-            if (canal.u) initClappr(canal.u);
-            else if (canal.d) initIframe(canal.d);
-        }
-
-        function playMovie(movie, el) {
-            updateActive(el); clearPlayer();
-            initClappr(movie.videoUrl);
-        }
-
-        function initClappr(source) {
-            currentClappr = new Clappr.Player({
-                source: source, parentId: "#player", plugins: [HlsjsPlayback],
-                width: '100%', height: '100%', autoPlay: true
+                div.ondblclick=()=>toggleFullScreen();
+                l.appendChild(div);
             });
         }
-
-        function initIframe(url) {
-            document.getElementById('player').innerHTML = `
-                <div class="player-wrapper">
-                    <div class="click-shield" onclick="this.remove()"></div>
-                    <iframe src="${url}" allow="autoplay; fullscreen; picture-in-picture"></iframe>
-                </div>`;
+        function playCanal(c,el){
+            updateActive(el);clearPlayer();const p=document.getElementById('player');
+            if(c.u)currentClappr=new Clappr.Player({source:c.u,parentId:"#player",plugins:[HlsjsPlayback],width:'100%',height:'100%',autoPlay:true});
+            else if(c.y)p.innerHTML=`<iframe src="https://www.youtube.com/embed/${c.y}?autoplay=1" allow="autoplay;fullscreen"></iframe>`;
+            else if(c.d)p.innerHTML=`<div class="player-wrapper"><div class="click-shield" onclick="this.remove()"></div><iframe src="${c.d}" allow="autoplay;fullscreen"></iframe></div>`;
         }
-
-        function clearPlayer() {
-            if (currentClappr) { currentClappr.destroy(); currentClappr = null; }
-            document.getElementById('player').innerHTML = "";
-        }
-
-        function toggleFullScreen() {
-            const container = document.getElementById('player-container');
-            if (!document.fullscreenElement) container.requestFullscreen().catch(err => console.log(err));
-        }
-
-        function updateActive(el) {
-            document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function filterList() {
-            let val = document.getElementById('filter').value.toLowerCase();
-            document.querySelectorAll('.item').forEach(el => {
-                el.style.display = el.innerText.toLowerCase().includes(val) ? 'flex' : 'none';
-            });
-        }
-
-        window.onload = () => { renderList(); if(document.querySelector('.item')) document.querySelector('.item').click(); };
+        function playMovie(m,el){updateActive(el);clearPlayer();currentClappr=new Clappr.Player({source:m.videoUrl,parentId:"#player",plugins:[HlsjsPlayback],width:'100%',height:'100%',autoPlay:true});}
+        function clearPlayer(){if(currentClappr){currentClappr.destroy();currentClappr=null;}document.getElementById('player').innerHTML="";}
+        function updateActive(el){document.querySelectorAll('.item').forEach(i=>i.classList.remove('active'));el.classList.add('active');if(window.innerWidth<=768)window.scrollTo({top:0,behavior:'smooth'});}
+        function filterList(){let v=document.getElementById('filter').value.toLowerCase();document.querySelectorAll('.item').forEach(el=>{el.style.display=el.innerText.toLowerCase().includes(v)?'flex':'none';});}
+        window.onload=()=>renderList();
     </script>
 </body>
 </html>
