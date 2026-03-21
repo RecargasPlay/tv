@@ -33,7 +33,8 @@
         /* MODAL SÉRIES */
         #series-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; padding: 50px; overflow-y: auto; }
         .close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: #fff; cursor: pointer; }
-        .ep-item { background: #222; padding: 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; border: 1px solid #333; }
+        .ep-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; list-style: none; padding: 0; }
+        .ep-item { background: #222; padding: 15px; border-radius: 5px; cursor: pointer; border: 1px solid #333; }
         .ep-item:hover { background: var(--mac-accent); color: #000; }
     </style>
 </head>
@@ -42,20 +43,20 @@
     <div id="login-screen">
         <h1 style="color: var(--mac-accent);">WEB BOTS PRO</h1>
         <div class="login-box">
-            <input type="text" id="dns" value="http://auth.urltech.gy:8080" placeholder="DNS">
+            <input type="text" id="dns" value="http://auth.urltech.gy" placeholder="DNS">
             <input type="text" id="user" placeholder="Usuário">
             <input type="password" id="pass" placeholder="Senha">
             <button onclick="logar()">ENTRAR NO CATÁLOGO</button>
-            <p style="font-size: 10px; color: #444; text-align: center;">Os vídeos abrirão em uma nova aba para evitar bloqueios.</p>
+            <p style="font-size: 10px; color: #444; text-align: center;">Links serão abertos em .m3u8 para maior compatibilidade.</p>
         </div>
     </div>
 
     <div id="app">
         <aside class="sidebar">
             <h2 style="color: var(--mac-accent); text-align:center;">MAC MENU</h2>
-            <div class="menu-item active" onclick="aba('live', this)">TV AO VIVO</div>
-            <div class="menu-item" onclick="aba('vod', this)">FILMES</div>
-            <div class="menu-item" onclick="aba('series', this)">SÉRIES</div>
+            <div id="btn-live" class="menu-item active" onclick="aba('live', this)">TV AO VIVO</div>
+            <div id="btn-vod" class="menu-item" onclick="aba('vod', this)">FILMES</div>
+            <div id="btn-series" class="menu-item" onclick="aba('series', this)">SÉRIES</div>
             <div class="menu-item" onclick="location.reload()" style="color:red; margin-top:30px;">SAIR</div>
         </aside>
         <main class="content">
@@ -66,20 +67,18 @@
     <div id="series-modal">
         <span class="close" onclick="fechar()">&times;</span>
         <h2 id="s-title" style="color:var(--mac-accent)">Temporadas</h2>
-        <div id="ep-list"></div>
+        <div id="ep-list" class="ep-list"></div>
     </div>
 
     <script>
         let auth = {};
         let data = { live: [], vod: [], series: [] };
-        
-        // Usando o CORS Proxy apenas para o login e listas (dados leves)
         const PROXY = "https://corsproxy.io/?";
 
         async function logar() {
             const dns = document.getElementById('dns').value.replace(/\/$/, "");
-            const user = document.getElementById('user').value;
-            const pass = document.getElementById('pass').value;
+            const user = document.getElementById('user').value.trim();
+            const pass = document.getElementById('pass').value.trim();
 
             if(!dns || !user || !pass) return alert("Preencha tudo!");
 
@@ -98,7 +97,7 @@
                     alert("Dados incorretos!");
                 }
             } catch (e) {
-                alert("Erro ao conectar! Se estiver no PC, use uma extensão de Allow CORS ou tente novamente.");
+                alert("Erro ao conectar! Tente usar o navegador Chrome e verifique o DNS.");
             }
         }
 
@@ -106,7 +105,6 @@
             const api = (act) => `${PROXY}${encodeURIComponent(auth.dns + '/player_api.php?username=' + auth.user + '&password=' + auth.pass + '&action=' + act)}`;
 
             try {
-                // Carrega TV, Filmes e Series
                 const [l, v, s] = await Promise.all([
                     fetch(api('get_live_streams')).then(r => r.json()),
                     fetch(api('get_vod_streams')).then(r => r.json()),
@@ -140,9 +138,9 @@
                         verSeries(i.series_id, i.name);
                     } else {
                         const pasta = t === 'live' ? 'live' : 'movie';
-                        const ext = i.container_extension || (t === 'live' ? 'ts' : 'mp4');
-                        // ABRE EM NOVA ABA PARA PULAR O BLOQUEIO DO GITHUB
-                        window.open(`${auth.dns}/${pasta}/${auth.user}/${auth.pass}/${i.stream_id}.${ext}`, '_blank');
+                        // Forçando o formato .m3u8 para todos os links
+                        const urlM3U8 = `${auth.dns}/${pasta}/${auth.user}/${auth.pass}/${i.stream_id}.m3u8`;
+                        window.open(urlM3U8, '_blank');
                     }
                 };
                 g.appendChild(card);
@@ -163,8 +161,9 @@
                     d.episodes[s].forEach(ep => {
                         const item = document.createElement('div');
                         item.className = 'ep-item';
-                        item.innerText = `Temp ${s} | Ep ${ep.episode_num} - ${ep.title}`;
-                        item.onclick = () => window.open(`${auth.dns}/series/${auth.user}/${auth.pass}/${ep.id}.${ep.container_extension}`, '_blank');
+                        item.innerText = `T${s} | E${ep.episode_num} - ${ep.title}`;
+                        // Forçando .m3u8 no episódio da série também
+                        item.onclick = () => window.open(`${auth.dns}/series/${auth.user}/${auth.pass}/${ep.id}.m3u8`, '_blank');
                         list.appendChild(item);
                     });
                 }
