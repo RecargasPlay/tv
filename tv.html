@@ -3,227 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebBots Pro - MAC Style</title>
+    <title>WebBots Pro - MAC Player</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { --mac-bg: #0a0a0a; --mac-sidebar: #121212; --mac-accent: #ffcc00; --mac-card: #1c1c1c; --text: #ffffff; }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--mac-bg); color: var(--text); overflow: hidden; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--mac-bg); color: var(--text); overflow: hidden; }
         
         /* LOGIN */
         #login-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; }
-        .login-box { background: #181818; padding: 40px; border-radius: 15px; border: 1px solid #333; width: 320px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 30px rgba(255,204,0,0.1); }
-        input { padding: 12px; border-radius: 5px; border: 1px solid #444; background: #050505; color: #fff; outline: none; }
-        input:focus { border-color: var(--mac-accent); }
-        button { padding: 12px; background: var(--mac-accent); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.3s; }
-        button:hover { background: #e6b800; transform: scale(1.02); }
+        .login-box { background: #181818; padding: 40px; border-radius: 15px; border: 1px solid #333; width: 320px; display: flex; flex-direction: column; gap: 15px; }
+        input { padding: 12px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; outline: none; }
+        button { padding: 12px; background: var(--mac-accent); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
 
-        /* APP LAYOUT */
+        /* APP */
         #app { display: none; height: 100vh; grid-template-columns: 260px 1fr; }
-        .sidebar { background: var(--mac-sidebar); padding: 25px; border-right: 1px solid #222; display: flex; flex-direction: column; }
-        .sidebar h2 { color: var(--mac-accent); font-size: 1.3rem; margin-bottom: 40px; text-align: center; }
-        .menu-item { padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 8px; color: #888; transition: 0.2s; font-weight: 500; }
-        .menu-item:hover, .menu-item.active { background: #222; color: var(--mac-accent); border-left: 4px solid var(--mac-accent); }
+        .sidebar { background: var(--mac-sidebar); padding: 25px; border-right: 1px solid #222; }
+        .menu-item { padding: 15px; cursor: pointer; border-radius: 8px; margin-bottom: 8px; color: #888; transition: 0.2s; }
+        .menu-item.active, .menu-item:hover { background: #222; color: var(--mac-accent); }
 
-        .content { padding: 35px; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 25px; }
+        .content { padding: 30px; overflow-y: auto; height: 100vh; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
         
-        /* CARDS */
-        .card { background: var(--mac-card); border-radius: 12px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: 0.3s; position: relative; }
-        .card:hover { border-color: var(--mac-accent); transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .card img { width: 100%; height: 230px; object-fit: cover; background: #222; }
-        .card-info { padding: 10px; background: rgba(0,0,0,0.8); position: absolute; bottom: 0; width: 100%; box-sizing: border-box; }
+        .card { background: var(--mac-card); border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: 0.3s; position: relative; }
+        .card:hover { border-color: var(--mac-accent); transform: translateY(-5px); }
+        .card img { width: 100%; height: 230px; object-fit: cover; }
+        .card-info { padding: 10px; background: rgba(0,0,0,0.8); position: absolute; bottom: 0; width: 100%; }
         .card p { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* MODAIS */
         #player-modal, #series-modal { display: none; position: fixed; inset: 0; background: #000; z-index: 10000; }
-        #series-modal { background: rgba(0,0,0,0.96); padding: 60px; overflow-y: auto; }
+        #series-modal { padding: 50px; overflow-y: auto; background: rgba(0,0,0,0.95); }
         video { width: 100%; height: 100%; }
-        .close { position: absolute; top: 25px; right: 35px; font-size: 45px; color: #fff; cursor: pointer; z-index: 10001; text-shadow: 0 0 10px #000; }
-        
-        /* LISTA EPISODIOS */
-        .ep-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; list-style: none; padding: 0; margin-top: 20px; }
-        .ep-item { background: #1a1a1a; padding: 18px; border-radius: 8px; cursor: pointer; border: 1px solid #333; transition: 0.2s; }
-        .ep-item:hover { background: var(--mac-accent); color: #000; font-weight: bold; }
+        .close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: #fff; cursor: pointer; }
+        .ep-item { background: #222; padding: 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; border: 1px solid #333; }
+        .ep-item:hover { background: var(--mac-accent); color: #000; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <h1 style="color: var(--mac-accent); letter-spacing: 2px;">WEB BOTS <span style="font-weight: 200;">PRO</span></h1>
+        <h1 style="color: var(--mac-accent);">WEB BOTS PRO</h1>
         <div class="login-box">
-            <input type="text" id="dns" value="http://auth.urltech.gy:8080" placeholder="DNS do Servidor">
-            <input type="text" id="user" placeholder="Seu Usuário">
-            <input type="password" id="pass" placeholder="Sua Senha">
-            <button onclick="logar()">ENTRAR NO SISTEMA</button>
-            <p style="font-size: 11px; color: #555; text-align: center; line-height: 1.4;">
-                Se falhar, ative o acesso em:<br>
-                <a href="https://cors-anywhere.com/corsdemo" target="_blank" style="color: #888;">cors-anywhere.com/corsdemo</a>
-            </p>
+            <input type="text" id="dns" value="http://auth.urltech.gy:8080" placeholder="Servidor">
+            <input type="text" id="user" placeholder="Usuário">
+            <input type="password" id="pass" placeholder="Senha">
+            <button onclick="logar()">ENTRAR</button>
         </div>
     </div>
 
     <div id="app">
         <aside class="sidebar">
-            <h2>MAC MENU</h2>
-            <div id="m-live" class="menu-item active" onclick="mudarAba('live', this)">TV AO VIVO</div>
-            <div id="m-vod" class="menu-item" onclick="mudarAba('vod', this)">FILMES</div>
-            <div id="m-series" class="menu-item" onclick="mudarAba('series', this)">SÉRIES</div>
-            <div style="margin-top: auto;"></div>
-            <div class="menu-item" onclick="location.reload()" style="color: #ff4444; border: none;">SAIR</div>
+            <h2 style="color: var(--mac-accent); text-align:center;">MAC MENU</h2>
+            <div class="menu-item active" onclick="aba('live', this)">TV AO VIVO</div>
+            <div class="menu-item" onclick="aba('vod', this)">FILMES</div>
+            <div class="menu-item" onclick="aba('series', this)">SÉRIES</div>
+            <div class="menu-item" onclick="location.reload()" style="color:red; margin-top:30px;">SAIR</div>
         </aside>
         <main class="content">
-            <h3 id="label-aba" style="color: #555; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px;">TV AO VIVO</h3>
-            <div class="grid" id="container-grid"></div>
+            <div class="grid" id="grid"></div>
         </main>
     </div>
 
     <div id="series-modal">
-        <span class="close" onclick="fecharModais()">&times;</span>
-        <h2 id="nome-da-serie" style="color: var(--mac-accent); margin-bottom: 10px;">Temporadas</h2>
-        <div id="box-episodios" class="ep-list"></div>
+        <span class="close" onclick="fechar()">&times;</span>
+        <h2 id="s-title" style="color:var(--mac-accent)"></h2>
+        <div id="ep-list"></div>
     </div>
 
     <div id="player-modal">
-        <span class="close" onclick="fecharModais()">&times;</span>
-        <video id="video-main" controls autoplay></video>
+        <span class="close" onclick="fechar()">&times;</span>
+        <video id="vid" controls autoplay></video>
     </div>
 
     <script>
-        let conta = {};
-        let db = { live: [], vod: [], series: [] };
+        let auth = {};
+        let data = { live: [], vod: [], series: [] };
         
-        // Proxy para permitir que o GitHub (HTTPS) acesse o servidor (HTTP)
-        const PROXY = "https://cors-anywhere.com/";
+        // ESTE PROXY É AUTOMÁTICO E NÃO PRECISA DE ATIVAÇÃO MANUAL
+        const PROXY = "https://corsproxy.io/?";
 
         async function logar() {
-            const dns = document.getElementById('dns').value.trim().replace(/\/$/, "");
-            const user = document.getElementById('user').value.trim();
-            const pass = document.getElementById('pass').value.trim();
+            const dns = document.getElementById('dns').value.replace(/\/$/, "");
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
 
-            if(!dns || !user || !pass) return alert("Por favor, preencha todos os campos.");
-
-            const linkAuth = `${PROXY}${dns}/player_api.php?username=${user}&password=${pass}`;
+            // Monta a URL passando pelo proxy automático
+            const url = `${PROXY}${encodeURIComponent(dns + '/player_api.php?username=' + user + '&password=' + pass)}`;
 
             try {
-                const res = await fetch(linkAuth);
+                const res = await fetch(url);
                 const json = await res.json();
 
                 if (json.user_info && json.user_info.auth === 1) {
-                    conta = { dns, user, pass };
+                    auth = { dns, user, pass };
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('app').style.display = 'grid';
-                    await carregarDadosIniciais();
+                    await carregar();
                 } else {
-                    alert("Usuário ou senha incorretos.");
+                    alert("Dados incorretos!");
                 }
-            } catch (err) {
-                alert("Erro de conexão! Clique no link abaixo do botão de entrar para autorizar o Proxy.");
+            } catch (e) {
+                alert("Erro ao conectar no servidor de IPTV.");
             }
         }
 
-        async function carregarDadosIniciais() {
-            const { dns, user, pass } = conta;
-            const api = `${PROXY}${dns}/player_api.php?username=${user}&password=${pass}`;
+        async function carregar() {
+            const api = (act) => `${PROXY}${encodeURIComponent(auth.dns + '/player_api.php?username=' + auth.user + '&password=' + auth.pass + '&action=' + act)}`;
 
-            try {
-                const [live, vod, series] = await Promise.all([
-                    fetch(`${api}&action=get_live_streams`).then(r => r.json()),
-                    fetch(`${api}&action=get_vod_streams`).then(r => r.json()),
-                    fetch(`${api}&action=get_series`).then(r => r.json())
-                ]);
+            const [l, v, s] = await Promise.all([
+                fetch(api('get_live_streams')).then(r => r.json()),
+                fetch(api('get_vod_streams')).then(r => r.json()),
+                fetch(api('get_series')).then(r => r.json())
+            ]);
 
-                db.live = Array.isArray(live) ? live : [];
-                db.vod = Array.isArray(vod) ? vod : [];
-                db.series = Array.isArray(series) ? series : [];
-
-                desenharGrid('live');
-            } catch (e) { console.error("Falha ao carregar conteúdo"); }
+            data.live = l; data.vod = v; data.series = s;
+            render('live');
         }
 
-        function mudarAba(tipo, elemento) {
+        function aba(t, el) {
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            elemento.classList.add('active');
-            document.getElementById('label-aba').innerText = elemento.innerText;
-            desenharGrid(tipo);
+            el.classList.add('active');
+            render(t);
         }
 
-        function desenharGrid(tipo) {
-            const grid = document.getElementById('container-grid');
-            grid.innerHTML = "";
-            const lista = db[tipo] || [];
-
-            // Limitamos a 200 itens para não pesar o navegador
-            lista.slice(0, 200).forEach(item => {
+        function render(t) {
+            const g = document.getElementById('grid');
+            g.innerHTML = "";
+            (data[t] || []).slice(0, 200).forEach(i => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                const img = item.stream_icon || item.cover || 'https://via.placeholder.com/200x300?text=Sem+Imagem';
-                
-                card.innerHTML = `<img src="${img}" loading="lazy"><div class="card-info"><p>${item.name}</p></div>`;
+                const img = i.stream_icon || i.cover || 'https://via.placeholder.com/200x300';
+                card.innerHTML = `<img src="${img}"><div class="card-info"><p>${i.name}</p></div>`;
                 
                 card.onclick = () => {
-                    if (tipo === 'series') {
-                        verSeries(item.series_id, item.name);
+                    if(t === 'series') {
+                        verSeries(i.series_id, i.name);
                     } else {
-                        const pasta = (tipo === 'live') ? 'live' : 'movie';
-                        const ext = item.container_extension || (tipo === 'live' ? 'ts' : 'mp4');
-                        const urlCanal = `${conta.dns}/${pasta}/${conta.user}/${conta.pass}/${item.stream_id}.${ext}`;
-                        abrirVideo(urlCanal);
+                        const pasta = t === 'live' ? 'live' : 'movie';
+                        const ext = i.container_extension || (t === 'live' ? 'ts' : 'mp4');
+                        play(`${auth.dns}/${pasta}/${auth.user}/${auth.pass}/${i.stream_id}.${ext}`);
                     }
                 };
-                grid.appendChild(card);
+                g.appendChild(card);
             });
         }
 
         async function verSeries(id, nome) {
-            const urlInfo = `${PROXY}${conta.dns}/player_api.php?username=${conta.user}&password=${conta.pass}&action=get_series_info&series_id=${id}`;
-            const res = await fetch(urlInfo);
-            const dados = await res.json();
+            const url = `${PROXY}${encodeURIComponent(auth.dns + '/player_api.php?username=' + auth.user + '&password=' + auth.pass + '&action=get_series_info&series_id=' + id)}`;
+            const res = await fetch(url);
+            const d = await res.json();
             
-            document.getElementById('nome-da-serie').innerText = nome;
-            const container = document.getElementById('box-episodios');
-            container.innerHTML = "";
+            document.getElementById('s-title').innerText = nome;
+            const list = document.getElementById('ep-list');
+            list.innerHTML = "";
 
-            // O Xtream Codes retorna episódios por temporadas (key 'episodes')
-            if (dados.episodes) {
-                for (let s in dados.episodes) {
-                    dados.episodes[s].forEach(ep => {
-                        const item = document.createElement('div');
-                        item.className = 'ep-item';
-                        item.innerText = `Temporada ${s} | EP ${ep.episode_num} - ${ep.title}`;
-                        item.onclick = () => {
-                            const urlEp = `${conta.dns}/series/${conta.user}/${conta.pass}/${ep.id}.${ep.container_extension}`;
-                            abrirVideo(urlEp);
-                        };
-                        container.appendChild(item);
-                    });
-                }
+            for(let s in d.episodes) {
+                d.episodes[s].forEach(ep => {
+                    const item = document.createElement('div');
+                    item.className = 'ep-item';
+                    item.innerText = `T${s} - E${ep.episode_num}: ${ep.title}`;
+                    item.onclick = () => play(`${auth.dns}/series/${auth.user}/${auth.pass}/${ep.id}.${ep.container_extension}`);
+                    list.appendChild(item);
+                });
             }
             document.getElementById('series-modal').style.display = 'block';
         }
 
-        function abrirVideo(url) {
+        function play(url) {
             const modal = document.getElementById('player-modal');
-            const video = document.getElementById('video-main');
+            const v = document.getElementById('vid');
             modal.style.display = 'block';
 
             if (Hls.isSupported()) {
                 const hls = new Hls();
                 hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.ERROR, function(e, data) {
-                    if(data.fatal) hls.loadSource(PROXY + url); // Tenta via proxy se falhar direto
-                });
-            } else {
-                video.src = url;
-            }
+                hls.attachMedia(v);
+            } else { v.src = url; }
         }
 
-        function fecharModais() {
+        function fechar() {
             document.getElementById('player-modal').style.display = 'none';
             document.getElementById('series-modal').style.display = 'none';
-            const v = document.getElementById('video-main');
-            v.pause();
-            v.src = "";
+            const v = document.getElementById('vid');
+            v.pause(); v.src = "";
         }
     </script>
 </body>
