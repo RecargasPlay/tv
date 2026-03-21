@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebBots Pro - MAC Style Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root { --mac-bg: #0a0a0a; --mac-sidebar: #121212; --mac-accent: #ffcc00; --mac-card: #1c1c1c; --text: #ffffff; }
+        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--mac-bg); color: var(--text); overflow: hidden; }
+        
+        /* TELA DE LOGIN */
+        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #000 0%, #1a1a1a 100%); display: flex; align-items: center; justify-content: center; z-index: 5000; flex-direction: column; }
+        .login-box { background: rgba(30, 30, 30, 0.9); padding: 40px; border-radius: 20px; border: 1px solid #333; width: 320px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { padding: 14px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--mac-accent); }
+        button { padding: 14px; background: var(--mac-accent); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; text-transform: uppercase; transition: 0.3s; }
+        button:hover { background: #e6b800; transform: translateY(-2px); }
+
+        /* APP LAYOUT */
+        #app { display: none; height: 100vh; grid-template-columns: 280px 1fr; }
+        
+        /* SIDEBAR ESTILO MAC */
+        .sidebar { background: var(--mac-sidebar); padding: 30px 20px; border-right: 1px solid #222; display: flex; flex-direction: column; }
+        .sidebar h2 { color: var(--mac-accent); font-size: 1.4rem; margin-bottom: 40px; text-align: center; letter-spacing: 1px; }
+        .menu-item { padding: 15px 20px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; transition: 0.2s; font-weight: 500; display: flex; align-items: center; color: #aaa; }
+        .menu-item:hover { background: #222; color: #fff; }
+        .menu-item.active { background: #252525; color: var(--mac-accent); box-shadow: inset 4px 0 0 var(--mac-accent); }
+
+        /* CONTEÚDO */
+        .content { padding: 40px; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+        .content h3 { margin-top: 0; font-weight: 300; color: #888; text-transform: uppercase; letter-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 25px; }
+        
+        /* CARDS */
+        .card { background: var(--mac-card); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; position: relative; border: 1px solid #222; }
+        .card:hover { transform: translateY(-10px); border-color: var(--mac-accent); box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
+        .card img { width: 100%; height: 230px; object-fit: cover; background: #222; display: block; }
+        .card-info { padding: 12px; background: rgba(0,0,0,0.7); position: absolute; bottom: 0; width: 100%; box-sizing: border-box; }
+        .card p { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+
+        /* PLAYER MODAL */
+        #player-modal { display: none; position: fixed; inset: 0; background: #000; z-index: 10000; }
+        video { width: 100%; height: 100%; }
+        .close-player { position: absolute; top: 30px; right: 30px; font-size: 40px; color: white; cursor: pointer; z-index: 10100; text-shadow: 0 0 10px #000; }
+
+        /* EPISODIOS MODAL (SÉRIES) */
+        #series-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 8000; padding: 50px; overflow-y: auto; }
+        .ep-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ep-item { background: #222; padding: 15px; border-radius: 8px; cursor: pointer; border: 1px solid #333; }
+        .ep-item:hover { background: var(--mac-accent); color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1 style="color: #ffcc00; margin-bottom: 25px; font-weight: 200;">WEB BOT <strong style="font-weight: 800;">PRO</strong></h1>
+        <div class="login-box">
+            <input type="text" id="dns" placeholder="Servidor (Ex: http://dns.com:8080)">
+            <input type="text" id="user" placeholder="Usuário">
+            <input type="password" id="pass" placeholder="Senha">
+            <button onclick="login()">ENTRAR NO SISTEMA</button>
+        </div>
+    </div>
+
+    <div id="app">
+        <aside class="sidebar">
+            <h2>MAC MENU</h2>
+            <div class="menu-item active" onclick="carregarSecao('live', this)">TV AO VIVO</div>
+            <div class="menu-item" onclick="carregarSecao('vod', this)">FILMES</div>
+            <div class="menu-item" onclick="carregarSecao('series', this)">SÉRIES</div>
+            <div style="margin-top: auto;"></div>
+            <div class="menu-item" onclick="location.reload()" style="color: #ff4444;">SAIR</div>
+        </aside>
+
+        <main class="content">
+            <h3 id="section-title">TV AO VIVO</h3>
+            <div class="grid" id="main-grid">
+                </div>
+        </main>
+    </div>
+
+    <div id="series-modal">
+        <span class="close-player" onclick="document.getElementById('series-modal').style.display='none'">&times;</span>
+        <h2 id="series-title" style="color: var(--mac-accent);">Temporadas</h2>
+        <div id="episodes-container" class="ep-list"></div>
+    </div>
+
+    <div id="player-modal">
+        <span class="close-player" onclick="fecharPlayer()">&times;</span>
+        <video id="video" controls autoplay></video>
+    </div>
+
+    <script>
+        let userData = {};
+        let database = { live: [], vod: [], series: [] };
+
+        async function login() {
+            const dns = document.getElementById('dns').value;
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+
+            if(!dns || !user || !pass) return alert("Preencha todos os campos!");
+
+            const authUrl = `${dns}/player_api.php?username=${user}&password=${pass}`;
+            
+            try {
+                const response = await fetch(authUrl);
+                const data = await response.json();
+
+                if (data.user_info.auth === 1) {
+                    userData = { dns, user, pass };
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app').style.display = 'grid';
+                    await inicializarDados();
+                } else {
+                    alert("Acesso Negado: Usuário ou Senha inválidos.");
+                }
+            } catch (err) {
+                alert("Erro de conexão. Verifique o DNS ou problema de CORS.");
+            }
+        }
+
+        async function inicializarDados() {
+            const { dns, user, pass } = userData;
+            const base = `${dns}/player_api.php?username=${user}&password=${pass}`;
+
+            // Fetch de tudo
+            const [live, vod, series] = await Promise.all([
+                fetch(`${base}&action=get_live_streams`).then(r => r.json()),
+                fetch(`${base}&action=get_vod_streams`).then(r => r.json()),
+                fetch(`${base}&action=get_series`).then(r => r.json())
+            ]);
+
+            database.live = live;
+            database.vod = vod;
+            database.series = series;
+
+            renderGrid('live');
+        }
+
+        function carregarSecao(tipo, el) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('section-title').innerText = el.innerText;
+            renderGrid(tipo);
+        }
+
+        function renderGrid(tipo) {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = "";
+            const itens = database[tipo] || [];
+
+            itens.slice(0, 200).forEach(item => {
+                const id = item.stream_id || item.series_id;
+                const img = item.stream_icon || item.cover || 'https://via.placeholder.com/200x300?text=Sem+Capa';
+                const name = item.name;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                if (tipo === 'series') {
+                    card.onclick = () => carregarEpisodios(id, name);
+                } else {
+                    const ext = item.container_extension || (tipo === 'live' ? 'ts' : 'mp4');
+                    const folder = tipo === 'live' ? 'live' : 'movie';
+                    const streamUrl = `${userData.dns}/${folder}/${userData.user}/${userData.pass}/${id}.${ext}`;
+                    card.onclick = () => abrirPlayer(streamUrl);
+                }
+
+                card.innerHTML = `
+                    <img src="${img}" loading="lazy">
+                    <div class="card-info"><p>${name}</p></div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function carregarEpisodios(seriesId, name) {
+            const { dns, user, pass } = userData;
+            const url = `${dns}/player_api.php?username=${user}&password=${pass}&action=get_series_info&series_id=${seriesId}`;
+            
+            const data = await fetch(url).then(r => r.json());
+            const container = document.getElementById('episodes-container');
+            container.innerHTML = "";
+            document.getElementById('series-title').innerText = name;
+            document.getElementById('series-modal').style.display = 'block';
+
+            // O Xtream retorna episódios organizados por temporadas (seasons)
+            for (let season in data.episodes) {
+                data.episodes[season].forEach(ep => {
+                    const div = document.createElement('div');
+                    div.className = 'ep-item';
+                    div.innerText = `T${season} | E${ep.episode_num} - ${ep.title}`;
+                    
+                    const epUrl = `${dns}/series/${user}/${pass}/${ep.id}.${ep.container_extension}`;
+                    div.onclick = () => {
+                        document.getElementById('series-modal').style.display = 'none';
+                        abrirPlayer(epUrl);
+                    };
+                    container.appendChild(div);
+                });
+            }
+        }
+
+        function abrirPlayer(url) {
+            const modal = document.getElementById('player-modal');
+            const video = document.getElementById('video');
+            modal.style.display = 'block';
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+            } else {
+                video.src = url;
+            }
+        }
+
+        function fecharPlayer() {
+            const modal = document.getElementById('player-modal');
+            const video = document.getElementById('video');
+            modal.style.display = 'none';
+            video.pause();
+            video.src = "";
+        }
+    </script>
+</body>
+</html>
