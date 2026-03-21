@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebBots Pro - MAC Player</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>WebBots Pro - MAC Catalog</title>
     <style>
         :root { --mac-bg: #0a0a0a; --mac-sidebar: #121212; --mac-accent: #ffcc00; --mac-card: #1c1c1c; --text: #ffffff; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--mac-bg); color: var(--text); overflow: hidden; }
@@ -13,7 +12,8 @@
         #login-screen { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; }
         .login-box { background: #181818; padding: 40px; border-radius: 15px; border: 1px solid #333; width: 320px; display: flex; flex-direction: column; gap: 15px; }
         input { padding: 12px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; outline: none; }
-        button { padding: 12px; background: var(--mac-accent); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        button { padding: 12px; background: var(--mac-accent); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        button:hover { background: #e6b800; }
 
         /* APP */
         #app { display: none; height: 100vh; grid-template-columns: 260px 1fr; }
@@ -30,10 +30,8 @@
         .card-info { padding: 10px; background: rgba(0,0,0,0.8); position: absolute; bottom: 0; width: 100%; }
         .card p { font-size: 13px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* MODAIS */
-        #player-modal, #series-modal { display: none; position: fixed; inset: 0; background: #000; z-index: 10000; }
-        #series-modal { padding: 50px; overflow-y: auto; background: rgba(0,0,0,0.95); }
-        video { width: 100%; height: 100%; }
+        /* MODAL SÉRIES */
+        #series-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; padding: 50px; overflow-y: auto; }
         .close { position: absolute; top: 20px; right: 30px; font-size: 40px; color: #fff; cursor: pointer; }
         .ep-item { background: #222; padding: 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; border: 1px solid #333; }
         .ep-item:hover { background: var(--mac-accent); color: #000; }
@@ -44,10 +42,11 @@
     <div id="login-screen">
         <h1 style="color: var(--mac-accent);">WEB BOTS PRO</h1>
         <div class="login-box">
-            <input type="text" id="dns" value="http://auth.urltech.gy:8080" placeholder="Servidor">
+            <input type="text" id="dns" value="http://auth.urltech.gy:8080" placeholder="DNS">
             <input type="text" id="user" placeholder="Usuário">
             <input type="password" id="pass" placeholder="Senha">
-            <button onclick="logar()">ENTRAR</button>
+            <button onclick="logar()">ENTRAR NO CATÁLOGO</button>
+            <p style="font-size: 10px; color: #444; text-align: center;">Os vídeos abrirão em uma nova aba para evitar bloqueios.</p>
         </div>
     </div>
 
@@ -66,20 +65,15 @@
 
     <div id="series-modal">
         <span class="close" onclick="fechar()">&times;</span>
-        <h2 id="s-title" style="color:var(--mac-accent)"></h2>
+        <h2 id="s-title" style="color:var(--mac-accent)">Temporadas</h2>
         <div id="ep-list"></div>
-    </div>
-
-    <div id="player-modal">
-        <span class="close" onclick="fechar()">&times;</span>
-        <video id="vid" controls autoplay></video>
     </div>
 
     <script>
         let auth = {};
         let data = { live: [], vod: [], series: [] };
         
-        // ESTE PROXY É AUTOMÁTICO E NÃO PRECISA DE ATIVAÇÃO MANUAL
+        // Usando o CORS Proxy apenas para o login e listas (dados leves)
         const PROXY = "https://corsproxy.io/?";
 
         async function logar() {
@@ -87,7 +81,8 @@
             const user = document.getElementById('user').value;
             const pass = document.getElementById('pass').value;
 
-            // Monta a URL passando pelo proxy automático
+            if(!dns || !user || !pass) return alert("Preencha tudo!");
+
             const url = `${PROXY}${encodeURIComponent(dns + '/player_api.php?username=' + user + '&password=' + pass)}`;
 
             try {
@@ -98,26 +93,31 @@
                     auth = { dns, user, pass };
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('app').style.display = 'grid';
-                    await carregar();
+                    await carregarListas();
                 } else {
                     alert("Dados incorretos!");
                 }
             } catch (e) {
-                alert("Erro ao conectar no servidor de IPTV.");
+                alert("Erro ao conectar! Se estiver no PC, use uma extensão de Allow CORS ou tente novamente.");
             }
         }
 
-        async function carregar() {
+        async function carregarListas() {
             const api = (act) => `${PROXY}${encodeURIComponent(auth.dns + '/player_api.php?username=' + auth.user + '&password=' + auth.pass + '&action=' + act)}`;
 
-            const [l, v, s] = await Promise.all([
-                fetch(api('get_live_streams')).then(r => r.json()),
-                fetch(api('get_vod_streams')).then(r => r.json()),
-                fetch(api('get_series')).then(r => r.json())
-            ]);
+            try {
+                // Carrega TV, Filmes e Series
+                const [l, v, s] = await Promise.all([
+                    fetch(api('get_live_streams')).then(r => r.json()),
+                    fetch(api('get_vod_streams')).then(r => r.json()),
+                    fetch(api('get_series')).then(r => r.json())
+                ]);
 
-            data.live = l; data.vod = v; data.series = s;
-            render('live');
+                data.live = Array.isArray(l) ? l : [];
+                data.vod = Array.isArray(v) ? v : [];
+                data.series = Array.isArray(s) ? s : [];
+                render('live');
+            } catch (e) { console.error("Erro ao carregar listas."); }
         }
 
         function aba(t, el) {
@@ -129,11 +129,11 @@
         function render(t) {
             const g = document.getElementById('grid');
             g.innerHTML = "";
-            (data[t] || []).slice(0, 200).forEach(i => {
+            (data[t] || []).slice(0, 150).forEach(i => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                const img = i.stream_icon || i.cover || 'https://via.placeholder.com/200x300';
-                card.innerHTML = `<img src="${img}"><div class="card-info"><p>${i.name}</p></div>`;
+                const img = i.stream_icon || i.cover || 'https://via.placeholder.com/200x300?text=WebBots';
+                card.innerHTML = `<img src="${img}" loading="lazy"><div class="card-info"><p>${i.name}</p></div>`;
                 
                 card.onclick = () => {
                     if(t === 'series') {
@@ -141,7 +141,8 @@
                     } else {
                         const pasta = t === 'live' ? 'live' : 'movie';
                         const ext = i.container_extension || (t === 'live' ? 'ts' : 'mp4');
-                        play(`${auth.dns}/${pasta}/${auth.user}/${auth.pass}/${i.stream_id}.${ext}`);
+                        // ABRE EM NOVA ABA PARA PULAR O BLOQUEIO DO GITHUB
+                        window.open(`${auth.dns}/${pasta}/${auth.user}/${auth.pass}/${i.stream_id}.${ext}`, '_blank');
                     }
                 };
                 g.appendChild(card);
@@ -157,35 +158,22 @@
             const list = document.getElementById('ep-list');
             list.innerHTML = "";
 
-            for(let s in d.episodes) {
-                d.episodes[s].forEach(ep => {
-                    const item = document.createElement('div');
-                    item.className = 'ep-item';
-                    item.innerText = `T${s} - E${ep.episode_num}: ${ep.title}`;
-                    item.onclick = () => play(`${auth.dns}/series/${auth.user}/${auth.pass}/${ep.id}.${ep.container_extension}`);
-                    list.appendChild(item);
-                });
+            if(d.episodes) {
+                for(let s in d.episodes) {
+                    d.episodes[s].forEach(ep => {
+                        const item = document.createElement('div');
+                        item.className = 'ep-item';
+                        item.innerText = `Temp ${s} | Ep ${ep.episode_num} - ${ep.title}`;
+                        item.onclick = () => window.open(`${auth.dns}/series/${auth.user}/${auth.pass}/${ep.id}.${ep.container_extension}`, '_blank');
+                        list.appendChild(item);
+                    });
+                }
             }
             document.getElementById('series-modal').style.display = 'block';
         }
 
-        function play(url) {
-            const modal = document.getElementById('player-modal');
-            const v = document.getElementById('vid');
-            modal.style.display = 'block';
-
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(v);
-            } else { v.src = url; }
-        }
-
         function fechar() {
-            document.getElementById('player-modal').style.display = 'none';
             document.getElementById('series-modal').style.display = 'none';
-            const v = document.getElementById('vid');
-            v.pause(); v.src = "";
         }
     </script>
 </body>
